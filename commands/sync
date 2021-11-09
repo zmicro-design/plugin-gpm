@@ -1,0 +1,47 @@
+#!/bin/bash
+
+load inquirer
+
+help() {
+  echo "Usage:"
+  echo "  gpm sync"
+}
+
+core() {
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    help
+    exit 0
+  fi
+
+  local availables=()
+  local path=
+
+  path=$PLUGIN_GPM_BASE_DIR
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Domain ?" availables domain
+
+  path=$path/$domain
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Owner ?" availables owner
+
+  path=$path/$owner
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Repo ?" availables repo
+
+  availables=("Yes" "No")
+  inquirer::select "Confirm to sync $(color::green "$domain/$owner/$repo") ?" availables confirm
+  if [ "$confirm" != "Yes" ]; then
+    exit 0
+  fi
+
+  gpm::sync $domain $owner $repo
+}
+
+run() {
+  core $@
+}
+
+run $@

@@ -42,9 +42,14 @@ gpm::add() {
     return
   fi
 
-  log::success "Start adding repository $(color::green $git_url)"
+  log::info "Adding repository $(color::green $git_url)"
   git clone $git_url $repo
-  log::success "Success cloning into $(color::green $repo_path)"
+
+  if [ "$?" = "0" ]; then
+    log::success "Success to cloneinto $(color::green $repo_path)"
+  else
+    log::error "Failed to clone $git_url"
+  fi
 }
 
 gpm::remove() {
@@ -70,8 +75,41 @@ gpm::remove() {
   rm -rf $PLUGIN_GPM_BASE_DIR/$domain/$owner/$repo
 }
 
+gpm::sync() {
+  local domain=$1
+  local owner=$2
+  local repo=$3
+
+  if [ -z "$domain" ]; then
+    log::error "[gpm::add] domain is required"
+    exit 1
+  fi
+
+  if [ -z "$owner" ]; then
+    log::error "[gpm::add] owner is required"
+    exit 1
+  fi
+
+  if [ -z "$repo" ]; then
+    log::error "[gpm::add] repo is required"
+    exit 1
+  fi
+
+  local repo_path=$PLUGIN_GPM_BASE_DIR/$domain/$owner/$repo
+  cd $repo_path
+  local branch=$(git rev-parse --abbrev-ref HEAD)
+
+  log::info "Syncing $owner/$repo on $branch ..."
+  
+  git pull origin $branch
+  if [ "$?" = "0" ]; then
+    log::success "Success sync $owner/$repo on $branch at $(color::green $repo_path)"
+  else
+    log::error "Failed to sync $git_url"
+  fi
+}
+
 export -f gpm::list
-
 export -f gpm::add
-
 export -f gpm::remove
+export -f gpm::sync
