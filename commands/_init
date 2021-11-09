@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# load inquirer
+
+# initialize() {
+#   if [ ! -f $SERVICE_GIT_CONFIG ]; then
+#     touch $SERVICE_GIT_CONFIG
+#   fi
+
+#   config::load_file $SERVICE_GIT_CONFIG
+#   if [ -z "$GOGS_HTTP_PROTO" ]; then
+#     inquirer::text "请输入 GOGS_HTTP_PROTO:" value
+#     config::set GOGS_HTTP_PROTO $value $SERVICE_GIT_CONFIG
+#   fi
+# }
+
+# initialize

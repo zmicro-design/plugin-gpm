@@ -1,0 +1,67 @@
+#!/bin/bash
+
+load inquirer
+
+help() {
+  echo "Usage:"
+  echo "  gpm add git_url"
+  echo ""
+  echo "Examples:"
+  echo "  gpm add git@github.com:whatwewant/zmicro"
+  echo "  git clone https://github.com/whatwewant/zmicro"
+}
+
+core() {
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    help
+    exit 0
+  fi
+
+  local git_url=$1
+  local domain=""
+  local owner=""
+  local repo=""
+
+  if [ -z "$git_url" ]; then
+    log::error "git url is required. --help for help"
+    exit 1
+  fi
+  
+  # 1. git clone git@github.com:whatwewant/zmicro
+  echo $git_url | grep "git@" >> /dev/null 2>&1
+  if [ "$?" = "0" ]; then
+    domain=$(echo $git_url | awk -F ':' '{print $1}' | awk -F '@' '{print $2}')
+    local owner_and_repo=$(echo $git_url | awk -F ':' '{print $2}' | awk -F '.' '{print $1}')
+    owner=$(echo $owner_and_repo | awk -F '/' '{print $1}')
+    repo=$(echo $owner_and_repo | awk -F '/' '{print $1}')
+  fi
+
+  # 2. git clone https://github.com/whatwewant/zmicro
+  echo $git_url | grep "https:" >> /dev/null 2>&1
+  if [ "$?" = "0" ]; then
+    domain=$(echo $git_url | awk -F '/' '{print $3}')
+    owner=$(echo $git_url | awk -F '/' '{print $4}')
+    repo=$(echo $git_url | awk -F '/' '{print $5}' | awk -F '.' '{print $1}')
+  fi
+
+  if [ -z "$domain" ] || [ -z "$owner" ] || [ -z "$repo" ]; then
+    log::error "invalid git url($git_url). --help for help"
+    exit 1
+  fi
+
+  local availables=("No" "Yes")
+  inquirer::select "Confirm to add ($(color::green $repo) at $(color::green "$domain/$owner/$repo")) ?" availables confirm
+  if [ "$confirm" != "Yes" ]; then
+    exit 0
+  fi
+
+  gpm::add $domain $owner $repo $git_url
+
+  # log::success "add ${name} success"
+}
+
+run() {
+  core $@
+}
+
+run $@

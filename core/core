@@ -1,0 +1,77 @@
+#!/bin/bash
+
+gpm::list() {
+  cd $PLUGIN_GPM_BASE_DIR
+  tree -L 3
+}
+
+gpm::add() {
+  local domain=$1
+  local owner=$2
+  local repo=$3
+  local git_url=$4
+
+  if [ -z "$domain" ]; then
+    log::error "[gpm::add] domain is required"
+    exit 1
+  fi
+
+  if [ -z "$owner" ]; then
+    log::error "[gpm::add] owner is required"
+    exit 1
+  fi
+
+  if [ -z "$repo" ]; then
+    log::error "[gpm::add] repo is required"
+    exit 1
+  fi
+
+  if [ -z "$git_url" ]; then
+    log::error "[gpm::add] git_url is required"
+    exit 1
+  fi
+
+  local owner_path=$PLUGIN_GPM_BASE_DIR/$domain/$owner
+  local repo_path=$owner_path/$repo
+
+  mkdir -p $owner_path
+  cd $owner_path
+
+  if [ -d "$repo_path" ]; then
+    log::success "Found repository $(color::green $repo_path)"
+    return
+  fi
+
+  log::success "Start adding repository $(color::green $git_url)"
+  git clone $git_url $repo
+  log::success "Success cloning into $(color::green $repo_path)"
+}
+
+gpm::remove() {
+  local domain=$1
+  local owner=$2
+  local repo=$3
+
+  if [ -z "$domain" ]; then
+    log::error "[gpm::add] domain is required"
+    exit 1
+  fi
+
+  if [ -z "$owner" ]; then
+    log::error "[gpm::add] owner is required"
+    exit 1
+  fi
+
+  if [ -z "$repo" ]; then
+    log::error "[gpm::add] repo is required"
+    exit 1
+  fi
+
+  rm -rf $PLUGIN_GPM_BASE_DIR/$domain/$owner/$repo
+}
+
+export -f gpm::list
+
+export -f gpm::add
+
+export -f gpm::remove

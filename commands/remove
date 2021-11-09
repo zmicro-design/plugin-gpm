@@ -1,0 +1,48 @@
+#!/bin/bash
+
+load inquirer
+
+help() {
+  echo "Usage:"
+  echo "  gpm remove"
+}
+
+core() {
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    help
+    exit 0
+  fi
+
+  local availables=()
+  local path=
+
+  path=$PLUGIN_GPM_BASE_DIR
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Domain ?" availables domain
+
+  path=$path/$domain
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Owner ?" availables owner
+
+  path=$path/$owner
+  cd $path
+  availables=($(ls $path))
+  inquirer::select "Select Repo ?" availables repo
+
+  availables=("No" "Yes")
+  inquirer::select "Confirm to delete $(color::red "$domain/$owner/$repo") ?" availables confirm
+  if [ "$confirm" != "Yes" ]; then
+    exit 0
+  fi
+
+  gpm::remove $domain $owner $repo
+  log::success "remove $domain/$owner/$repo success"
+}
+
+run() {
+  core $@
+}
+
+run $@

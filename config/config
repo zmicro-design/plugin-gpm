@@ -1,0 +1,11 @@
+export PLUGIN_GPM_NAME=gpm
+
+export PLUGIN_GPM_DATA=$(plugin::get_app_data_path $PLUGIN_GPM_NAME)
+export PLUGIN_GPM_LOGS=$(plugin::get_app_logs_path $PLUGIN_GPM_NAME)
+export PLUGIN_GPM_CONFIG=$(plugin::get_app_configs_path $PLUGIN_GPM_NAME)/config
+
+export PLUGIN_GPM_BASE_DIR=$HOME/code
+
+if [ -d "$PLUGIN_GPM_BASE_DIR" ]; then
+  mkdir -p $PLUGIN_GPM_BASE_DIR
+fi
